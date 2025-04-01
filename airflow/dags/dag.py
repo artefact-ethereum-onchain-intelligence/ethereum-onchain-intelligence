@@ -9,8 +9,6 @@ from ...applications.extraction_app import extract_data
 
 
 
-def print_hello():
-    print("Hello, Airflow!")
 
 
 default_args = {
@@ -21,6 +19,10 @@ default_args = {
     "retry_delay": timedelta(minutes=5),
 }
 
+@task(task_id="extraction")
+def task_extraction(): 
+  extract_data()
+  
 # Define the DAG
 with DAG(
     "eutherium_dag",
@@ -29,12 +31,11 @@ with DAG(
     schedule_interval="0 12 * * *",  
     catchup=False,
 ) as dag:
+    extraction = task_extraction()
 
-    @task(task_id="extraction")
-    def task_extraction(): 
-        extract_data()
+  
         
 
     # Set task dependencies
-    task_extraction  
+    extraction  
 
