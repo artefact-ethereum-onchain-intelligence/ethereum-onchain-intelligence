@@ -1,8 +1,10 @@
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
+from airflow.decorators import task
 from datetime import datetime, timedelta
-from ..applications.extraction_app import extract_data
+from ...applications.extraction_app import extract_data
+
 
 
 
@@ -28,11 +30,10 @@ with DAG(
     catchup=False,
 ) as dag:
 
-   
-    task_extraction = PythonOperator(
-        task_id="extraction",
-        python_callable=extract_data,
-    )
+    @task(task_id="extraction")
+    def task_extraction(): 
+        extract_data()
+        
 
     # Set task dependencies
     task_extraction  
