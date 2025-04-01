@@ -2,6 +2,7 @@ from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from datetime import datetime, timedelta
+from ..applications.extraction_app import extract_data
 
 
 
@@ -20,19 +21,19 @@ default_args = {
 
 # Define the DAG
 with DAG(
-    "example_dag",
+    "eutherium_dag",
     default_args=default_args,
-    description="A simple example DAG",
+    description="extract, transform, load",
     schedule_interval="0 12 * * *",  
     catchup=False,
 ) as dag:
 
    
-    task_hello = PythonOperator(
-        task_id="print_hello",
-        python_callable=print_hello,
+    task_extraction = PythonOperator(
+        task_id="extraction",
+        python_callable=extract_data,
     )
 
     # Set task dependencies
-    task_hello  
+    task_extraction  
 
