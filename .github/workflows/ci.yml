@@ -2,9 +2,11 @@ name: CI
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
+  workflow_dispatch: # Allows manual triggering of the workflow from any
+  
 
 jobs:
   build:
@@ -13,28 +15,15 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    # - name: Set up Node.js
-    #   uses: actions/setup-node@v3
-    #   with:
-    #     node-version: '18'
-    #     cache: 'npm'
-    
-    # - name: Install dependencies
-    #   run: npm ci
-    
-    # - name: Run tests
-    #   run: npm test 
-      
-    # - name: Set up Google Cloud SDK
-    #   uses: google-github-actions/setup-gcloud@v1
-    #   with:
-    #     project_id: ${{ secrets.GCP_PROJECT_ID }}
-    #     service_account_key: ${{ secrets.GCP_SA_KEY }}
-    #     export_default_credentials: true
-    
-    # - name: Upload DAGs to GCP bucket
-    #   if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/main')
-    #   run: |
-    #     gsutil -m cp -r ./dags/* gs://${{ secrets.GCP_BUCKET_NAME }}/dags/
-
-    
+    # Authenticate via Service Account Key JSON
+    # See https://github.com/google-github-actions/auth#authenticating-via-service-account-key-json-1
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v2'
+      with:
+        credentials_json: '${{ secrets.GCP_KEY }}'
+    - id: 'upload-dags'
+      name: 'Upload Airflow DAGs to GCP - Intended for use with GCP Composer Airflow'
+      uses: 'google-github-actions/upload-cloud-storage@v2'
+      with:
+        path: ./airflow/dags
+        destination: ${{ vars.GCP_BUCKET_NAME  }}
