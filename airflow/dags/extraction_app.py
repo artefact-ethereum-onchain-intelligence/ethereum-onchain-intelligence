@@ -2,15 +2,18 @@ import requests
 from dotenv import load_dotenv
 import os
 from dataclasses import dataclass
-from loguru import logger
+#from loguru import logger
+import logging
 import json
+from logging.handlers import RotatingFileHandler
 
 
 @dataclass
 class FetchJSONData():
     
     
-    credentials_dict: dict    
+    credentials_dict: dict
+    logger : logging.Logger    
     
     
     def generate_json_file(self, data, filename):
@@ -19,7 +22,7 @@ class FetchJSONData():
         with open(filename, 'w') as f:
             json.dump(data, f, indent=4)
         
-        logger.info(f'JSON file generated: {filename}')
+        self.logger.info(f'JSON file generated: {filename}')
     
     
     def call_api_data(self)->json:
@@ -43,19 +46,19 @@ class FetchJSONData():
             
             assert response.status_code == 200
             if response.status_code != 200:
-                logger.error(f"Bad response status: {response.status_code}")
+                self.logger.error(f"Bad response status: {response.status_code}")
                 raise ValueError(f"API call failed with status: {response.status_code}")
             else:
-                logger.info("Status code assertion passed with success.")
+                self.logger.info("Status code assertion passed with success.")
             
             data = response.json()
             # Assert that the data is a dict (JSON object)
             assert isinstance(data, dict)        
             if not isinstance(data, dict):
-                logger.error(f"Expected dict, got {type(data)}")
+                self.logger.error(f"Expected dict, got {type(data)}")
                 raise TypeError("Returned data is not a JSON object")        
             else:
-                logger.info("Data type assertion passed.")
+                self.logger.info("Data type assertion passed.")
             
             # Pretty print the response
             #print(json.dumps(data, indent=4))
@@ -73,13 +76,33 @@ class FetchJSONData():
 # Function to be called by Airflow
 def extract_data():
     
-    logger.add("logfile.log", rotation="500 KB")
+    # Create logger
+    logger = logging.getLogger("etherscan_logger")
+    logger.setLevel(logging.INFO)
+
+    # Avoid adding multiple handlers if extract_data is called multiple times
+    if not logger.handlers:
+        # Rotating file handler
+        file_handler = RotatingFileHandler(
+            "logfile.log",
+            maxBytes=500 * 1024,
+            backupCount=5
+        )
+        file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        logger.addHandler(file_handler)
+
+        # Console handler
+        console_handler = logging.StreamHandler()
+        console_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+        logger.addHandler(console_handler)
+
     logger.info("Starting data extraction...")
 
     load_dotenv()
     key = os.getenv("ETHERSCAN_API_KEY")
 
     if not key:
+        logger.error("ETHERSCAN_API_KEY not found in environment variables")
         raise EnvironmentError("ETHERSCAN_API_KEY not found in environment variables")
 
     addresses_list = [
@@ -99,13 +122,11 @@ def extract_data():
     }
 
     # Object
-    fetcher = FetchJSONData(credentials_dict)
+    fetcher = FetchJSONData(credentials_dict, logger)
     # Method call
     fetcher.call_api_data()
 
     logger.info("Data extraction finished!")
-
-
 
 if __name__ == "__main__":
     # Run
