@@ -3,12 +3,7 @@ from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator
 from airflow.decorators import task
 from datetime import datetime, timedelta
-from ...applications.extraction_app import extract_data
-
-
-
-
-
+from applications.extraction_app import extract_data
 
 
 default_args = {
@@ -32,9 +27,6 @@ with DAG(
     catchup=False,
 ) as dag:
     extraction = task_extraction()
-
-  
-        
 
     # Set task dependencies
     extraction  
