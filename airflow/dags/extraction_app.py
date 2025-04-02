@@ -19,10 +19,12 @@ class FetchJSONData():
     def generate_json_file(self, data, filename):
         
         # Save the response to a file
-        with open(filename, 'w') as f:
+        output_dir = os.getenv("EXTRACTION_DIR")
+        file_path = os.path.join(output_dir, filename)
+        with open(file_path, 'w') as f:
             json.dump(data, f, indent=4)
         
-        self.logger.info(f'JSON file generated: {filename}')
+        self.logger.info(f'JSON file generated: {file_path}')
     
     
     def call_api_data(self)->json:
