@@ -1,10 +1,7 @@
 from airflow import DAG
-from airflow.operators.bash import BashOperator
-from airflow.operators.python import PythonOperator
 from airflow.decorators import task
 from datetime import datetime, timedelta
-from applications.extraction_app import extract_data
-
+from extraction_app import extract_data
 
 default_args = {
     "owner": "airflow",
@@ -14,20 +11,18 @@ default_args = {
     "retry_delay": timedelta(minutes=5),
 }
 
-@task(task_id="extraction")
-def task_extraction(): 
-  extract_data()
-  
 # Define the DAG
 with DAG(
-    "eutherium_dag",
+    "ethereum_dag",  # Changed from eutherium to ethereum (if that's what you meant)
     default_args=default_args,
-    description="extract, transform, load",
-    schedule_interval="0 12 * * *",  
+    description="Extract, transform, load for Ethereum data",
+    schedule_interval="0 12 * * *",  # Runs daily at noon
     catchup=False,
 ) as dag:
-    extraction = task_extraction()
 
-    # Set task dependencies
-    extraction  
+    @task(task_id="extraction")
+    def task_extraction(): 
+        extract_data()
+
+    extraction = task_extraction() 
 
