@@ -177,4 +177,5 @@ cython_debug/
 
 # Airflow
 airflow/logs/*
-airflow/data/*
+airflow/data/*transactions*
+airflow/data/*.json
