@@ -11,13 +11,23 @@ from airflow.decorators import dag, task, task_group
 
 # Configure logger
 logger = logging.getLogger(__name__)
+from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
+from airflow.providers.google.cloud.operators.cloud_storage import GCSUploadFileOperator
+from airflow.operators.bash import BashOperator
+import os
+import subprocess
+
+BUCKET_NAME = os.getenv("GCS_BUCKET_NAME", "default-bucket-name")
+DESTINATION_TABLE = os.getenv("BQ_DESTINATION_TABLE", "default_dataset.default_table")
+SOURCE_OBJECT = os.getenv("GCS_SOURCE_OBJECT", "default_source_object.json")
+DBT_PROJECT_DIR = os.getenv("DBT_PROJECT_DIR", "/path/to/dbt/project")
 
 default_args = {
     "owner": "airflow",
     "depends_on_past": False,
     "start_date": datetime(2025, 4, 1),
     "retries": 1,
-    "retry_delay": timedelta(seconds=10),
+    "retry_delay": timedelta(minutes=5),
 }
 
 
@@ -82,8 +92,23 @@ def ethereum_onchain_intelligence_dag() -> None:
             "v2_router_table": loading_tasks["tables"].get("v2_router_table"),
         }
 
+
+
+    @task
+    def run_dbt_tests():
+        command = f"cd {DBT_PROJECT_DIR} && dbt run --target dev && dbt test --target dev"
+        result = subprocess.run(command, shell=True, check=True, capture_output=True)
+        if result.returncode != 0:
+            raise Exception(f"dbt test failed: {result.stderr.decode('utf-8')}")
+        print(f"dbt test result: {result.stdout.decode('utf-8')}")
+
+     test = run_dbt_tests()
+
+
     # Get the result from the extraction task
     extraction_results = task_extraction()
+
+
 
     data_loading(
         uni_path=extraction_results[UNI],
