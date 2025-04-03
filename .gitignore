@@ -172,3 +172,10 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+.python-version
+
+# Airflow
+airflow/logs/*
+airflow/data/*transactions*
+airflow/data/*.json

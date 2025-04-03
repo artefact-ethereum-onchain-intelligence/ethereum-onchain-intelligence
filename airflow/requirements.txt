@@ -1,2 +1,3 @@
-airflow
-datetime
+apache-airflow
+requests
+python-dotenv
