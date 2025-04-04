@@ -21,22 +21,35 @@ class FetchJSONData():
         # Save the response to a file
         output_dir = os.getenv("EXTRACTION_DIR")
         file_path = os.path.join(output_dir, filename)
-        with open(file_path, 'w') as f:
-            json.dump(data, f, indent=4)
+        
+        # Check if the 'result' key exists in the data
+        if 'result' in data and isinstance(data['result'], list):
+            # Write as JSONL (JSON Lines) format for BigQuery compatibility
+            with open(file_path, 'w') as f:
+                for transaction in data['result']:
+                    json_line = json.dumps(transaction)
+                    f.write(json_line + '\n')
+        else:
+            # Fallback to regular JSON if not expected format
+            with open(file_path, 'w') as f:
+                json.dump(data, f, indent=4)
         
         self.logger.info(f'JSON file generated: {file_path}')
+
+        return file_path
     
     
-    def call_api_data(self)->json:
+    def call_api_data(self) -> dict:
         
+        file_paths = {}
         for idx, address in enumerate(self.credentials_dict['addresses']):
             
             params = {
                 'module': 'account',
                 'action': 'txlist',
                 'address': address,
-                'startblock': 0,
-                'endblock': 99999999,
+                'startblock': 0, # TODO: increment this with every runnning
+                'endblock': 99999999, # TODO: increment this with every runnning
                 'page': 1,
                 'offset': 10000,  # Number of results to return
                 'sort': 'asc',
@@ -67,12 +80,13 @@ class FetchJSONData():
             
             # Short name for filename
             #short_addr = f"{credentials_dict['addresses_names'][idx]}"
-            short_addr = self.credentials_dict['addresses_names'][idx]
-            filename = f"transactions_{short_addr}.json"
+            data_name = self.credentials_dict['addresses_names'][idx]
+            filename = f"transactions_{data_name}.json"
             
-            self.generate_json_file(data, filename)     
+            output_file_path = self.generate_json_file(data, filename)     
+            file_paths[data_name] = output_file_path
             
-        return data
+        return file_paths
     
 
 # Function to be called by Airflow
@@ -112,9 +126,9 @@ def extract_data():
         '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D',
         '0xEf1c6E67703c7BD7107eed8303Fbe6EC2554BF6B'
     ]
-    
-    names = ['UNI', 'Uniswap_V2_Router', 'Uniswap_Universal_Router']
 
+    names = ['UNI', 'Uniswap_V2_Router', 'Uniswap_Universal_Router']
+    
     # Class attributes
     credentials_dict = {
         'api_key': key,
@@ -126,9 +140,12 @@ def extract_data():
     # Object
     fetcher = FetchJSONData(credentials_dict, logger)
     # Method call
-    fetcher.call_api_data()
+    output_file_paths_dict = fetcher.call_api_data()
+    logger.info(f"File paths6: {output_file_paths_dict}") # TODO: remove this
 
     logger.info("Data extraction finished!")
+
+    return output_file_paths_dict
 
 if __name__ == "__main__":
     # Run
