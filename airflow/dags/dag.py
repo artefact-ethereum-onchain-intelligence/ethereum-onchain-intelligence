@@ -13,6 +13,7 @@ from airflow.decorators import dag, task, task_group
 logger = logging.getLogger(__name__)
 from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
 from airflow.providers.google.cloud.operators.cloud_storage import GCSUploadFileOperator
+from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
 from airflow.operators.bash import BashOperator
 import os
 import subprocess
@@ -102,7 +103,17 @@ def ethereum_onchain_intelligence_dag() -> None:
             raise Exception(f"dbt test failed: {result.stderr.decode('utf-8')}")
         print(f"dbt test result: {result.stdout.decode('utf-8')}")
 
-     test = run_dbt_tests()
+    @task(task_id="run_dbt")
+    def run_dbt_command():
+
+        command = "dbt run --project-dir /opt/airflow/dbt_project"  # Point to mounted dbt project
+        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise Exception(f"DBT run failed: {result.stderr}")
+        print(result.stdout)
+
+
+    dbt = run_dbt_command()
 
 
     # Get the result from the extraction task
