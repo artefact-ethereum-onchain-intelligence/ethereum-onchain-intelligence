@@ -27,7 +27,7 @@ This project provides tools and utilities for gathering, analyzing, and visualiz
 - Google Cloud Platform account (for BigQuery and GCS integrations)
 
 ### Installation
--Use terraform option 
+-Use terraform option
 
 
 ## Run Airflow
@@ -48,7 +48,7 @@ Before running Airflow, make sure to set up the required environment variables:
    BQ_DATASET_ID="your_bigquery_dataset_id"  # Required: BigQuery dataset ID
    BUCKET_NAME="your_gcs_bucket_name"              # Required: GCS bucket name
    ```
-   
+
    These variables are required for fetching data from Etherscan's API services and configuring the Google Cloud storage.
 
 3. The project expects environment variables to be loaded using direnv:
@@ -121,4 +121,50 @@ Airflow is configured with the following dependencies:
 
 Note: Logs are stored in the `airflow/logs` directory and data in `airflow/data`. Both directories are gitignored.
 
+## Code Quality & Development
 
+### Linting and Formatting
+
+This project uses [Ruff](https://github.com/charliermarsh/ruff) for both linting and formatting Python code:
+
+- **Linting**: Ruff provides fast Python linting with the following rules enabled:
+  - `I`: Import sorting (isort)
+  - `S`: Security checks (flake8-bandit)
+  - `E`: PEP 8 errors (pycodestyle)
+  - `N`: Naming conventions (pep8-naming)
+  - `F`: Code checks (pyflakes)
+  - `T20`: Print statement checks
+  - `ANN`: Type annotation checks
+  - `ARG`: Unused argument checks
+
+- **Formatting**: Ruff's formatter ensures consistent code style with:
+  - Line length: 120 characters
+  - Target Python version: 3.10
+  - Google-style docstrings
+
+### Pre-commit Hooks
+
+The project uses pre-commit to ensure code quality checks run before each commit:
+
+1. Install pre-commit and other development dependencies:
+   ```bash
+   pip install -r requirements-dev.txt
+   pre-commit install
+   ```
+
+2. Available hooks:
+   - Standard file checks (trailing whitespace, file endings, YAML validation)
+   - Ruff linting with automatic fixes
+   - Ruff formatting
+
+3. Run manually on all files:
+   ```bash
+   pre-commit run --all-files
+   ```
+
+4. Run a specific hook:
+   ```bash
+   pre-commit run ruff --all-files
+   ```
+
+Pre-commit ensures all code meets the project's quality standards before being committed.

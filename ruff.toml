@@ -1,0 +1,19 @@
+# Global settings
+line-length = 120
+target-version = "py310"
+
+# Lint settings
+[lint]
+# Select rules to enforce:
+# I: isort (import sorting)
+# S: flake8-bandit (security)
+# E: pycodestyle errors
+# N: pep8-naming
+# F: pyflakes
+# T20: flake8-print
+# ANN: flake8-annotations
+# ARG: flake8-unused-arguments
+select = ["I", "S", "E", "N", "F", "T20", "ANN", "ARG"]
+
+[lint.pydocstyle]
+convention = "google"
