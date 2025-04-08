@@ -1,0 +1,18 @@
+name: 'ethereum_onchain_intelligence'
+version: '1.0.0'
+config-version: 2
+
+profile: ethereum_onchain_intelligence
+
+model-paths: ["models"]
+
+
+clean-targets:         # directories to be removed by `dbt clean`
+  - "target"
+  - "dbt_packages"
+
+
+models:
+  ethereum_onchain_intelligence:
+    staging: # Models in models/staging/
+      +materialized: table

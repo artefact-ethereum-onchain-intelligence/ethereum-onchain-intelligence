@@ -182,3 +182,8 @@ airflow/config/application_credentials.json
 
 # Intellij
 .idea
+
+# dbt
+dbt_packages/
+target/
+logs/

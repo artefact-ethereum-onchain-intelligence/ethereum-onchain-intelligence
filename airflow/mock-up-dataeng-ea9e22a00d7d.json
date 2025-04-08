@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "mock-up-dataeng",
+  "private_key_id": "ea9e22a00d7dce81615db07125902af07a3e0412",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDH2NdbsHDalezo\ncGAKvaz69ltB75AkIF7eiEHuwQNvkaZbqmvic4MGel/uLe51BKvFAgSsJz4X45lW\nh5HNT6lEdmknOyXRos4B/b/l9fgwOzibaxFKZNWfa8Ptd6/zLC6ThMTU8XrUPEH7\nyBt+AF44AFOuJRH69tuOafNhJDnVhrHhunO0MbrZxukqW2ssZ/YwNvH6cVYxNapF\nW3aUntikoGGbVteeMc0+ei4IvGGeDuHjva6bKH6Jd7IN+yzj3KiCqCl31J8xJVPK\nC+sKUJMM2kKynk5i0XAIY0nHkzWfMR5cPOjKJ3R7NYue/s4YO0/ihdv7o4K+BWpt\nCXOVRNFvAgMBAAECggEAImLkt2GWIX5Pi7UeSWrWkz4FeMRsNFMfj8G5Oogae71/\nduFNe+LtRhWTYQulLpxVo+nTfP2pmPmv/iwIgd+1m9KWCEqMmNQfB0eul7ZpdH8U\nH+XdzUOpYCtuRHNmInzVLMvZBFziihcuMVD+rgEJNTCVNW8qd1i3cXs4hdvyWZNr\nwdVOWq91Ke26M4EMQvNrLtcKdtfYDzFzdUmQ/78Ce9JHx3f56TLsENkL4Zr03cft\noDtGP+301bCvVjOI2aZHUvig7mJ88FC+6gWcGoZHIXP5z7myuJmSS2tQMD5ra5Yc\nr9iKIuYaQi50Dbmdhh+W4GFCXaxEKLo0CsCwwxWqBQKBgQD8tjmacW3/1FZ7241h\nmi31EuuFisZfWXD4/YlbpkQSH8+7/Bst5jf1k8mnhQQpQ/IJjzRRCze7r5KfYeu7\ntnhCJz96yl9B+hCQDOuJpOgvS8pFEZWOC8yNO+f8Lnomm3ho74XeQAVZFStwwtBA\nQ4km48G/6XC1MV+B9NpK+1N1pQKBgQDKcoZ8YwRjti1laeH8ikyplKg2H8Wv0Yw3\nt4OviwtNNs3/+HsBJthoWjJgSslWkCX2SDBcxkAiCaMIL7OFLHVex76LN3Ry3bXO\n1YIKvT6ry0DW8KxAv1noWYEoZj4mbn0ZIhaPgc63/bf2pW6UX/5Ko+6UZMY2Gp5g\nUJM9iarGgwKBgQDJrG8J9s3PJVijXZJVuuJEO4Yju50WCN3khwkwT97xC9wPbGEQ\nXzJ3VCrQ+pFYkTW+NT+OEcK3kKUVduLWmgcc3A+H4arljzfajcUGwsjcvcI9HoxY\noMfsSkuXcEvhNZ+BNu2BcVwTPJa/VWk2b+8rTwWXLyfYIf/TSWFQB4QSVQKBgBOi\nT9C4ebCB9p0jS7uGXjEELdwx8KZAmGy+65KW1Z3Ddu8gVi2iatKUDNax6hzvFf9w\nuOAGiinC7YDZv3tm+GsczCoMUsrhHcTViCsqd22J5Nvzs4EEDeAu7gvQ/q4TgSZy\n2+VHHZlSjgjpunPBa5QpmfXiYCbXJg0JQ35wX5OpAoGAbeuzkFfkVLSbEflvhnUY\nie8qvC5B67P7GPONV94qUOITgBKzA7YITetQKFEOYNNOOrJSYaCtjoAmGQRWKhgb\nJz4MHnt+FRAloLRnFKwnFwJpSu+f5cD4lxv49ExBk44uFdlk+ChZAS6eg0og2lrT\npDfS3+WCA75KLlUr3R7SubQ=\n-----END PRIVATE KEY-----\n",
+  "client_email": "airflow-bq-test@mock-up-dataeng.iam.gserviceaccount.com",
+  "client_id": "109516847642434256332",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/airflow-bq-test%40mock-up-dataeng.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

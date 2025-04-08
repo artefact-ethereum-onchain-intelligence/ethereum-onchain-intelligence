@@ -1,0 +1,15 @@
+version: 2
+
+macros:
+  - name: clean_table
+    description: |
+      A macro that cleans and validates transaction data from various Uniswap-related tables.
+      It performs the following operations:
+      - Validates that 'from' and 'to' addresses are not null or empty
+      - Validates that the transaction value is numeric
+      - Casts the value field to NUMERIC type
+      - Filters out records with invalid addresses or values
+    arguments:
+      - name: table_name
+        type: string
+        description: The name of the source table to clean

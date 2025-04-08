@@ -1,0 +1,15 @@
+version: 2
+
+sources:
+  - name: ethereum_sources # A unique name for this source group
+    description: "Raw transaction data tables from BigQuery."
+    # database: defined in profile
+    schema: "{{ env_var('BQ_DATASET_ID') }}" # Raw data schema/dataset
+    tables:
+      - name: uni_transactions
+        description: "Raw transactions related to UNI token or contracts."
+      - name: uniswap_universal_router_transactions
+        description: "Raw transactions interacting with the Uniswap Universal Router."
+      - name: uniswap_v2_router_transactions
+        description: "Raw transactions interacting with the Uniswap V2 Router."
+        # Add loaded_at_field or source freshness checks if needed

@@ -1,4 +1,17 @@
 apache-airflow==2.10.5
 requests
 python-dotenv
-apache-airflow-providers-google==11.0.0
+apache-airflow-providers-google
+google-cloud-bigquery
+apache-airflow-providers-dbt-cloud
+
+dbt-core==1.7.4
+dbt-bigquery==1.7.4
+
+# Visualization
+matplotlib==3.10.1
+numpy>=1.23
+pillow>=8
+
+# Machine Learning
+scikit-learn>=1.6.1
