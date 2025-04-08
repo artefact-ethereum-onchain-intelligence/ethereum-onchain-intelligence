@@ -57,7 +57,7 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - ${AIRFLOW_PROJ_DIR:-.}/data:/opt/airflow/data
     - ./requirements.txt:/opt/airflow/requirements.txt
-    - ./dbt_project:${DBT_PROJECT_DIR}
+    - ./dbt_project:${DBT_PROJECT_DIR:-/opt/airflow/dbt_project}
 
 
   user: "${AIRFLOW_UID:-50000}:0"
