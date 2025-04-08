@@ -85,9 +85,25 @@ To run Apache Airflow for workflow orchestration:
    ```
 
 2. Start Airflow using Docker Compose:
+
+   You have multiple options to run Airflow with Docker Compose:
+
+   Option 1: Build and run in separate steps
    ```bash
-   docker-compose up -d
+   # First build the Docker images
+   docker compose build
+
+   # Then start the containers in detached mode
+   docker compose up -d
    ```
+
+   Option 2: Build and run in a single command
+   ```bash
+   # Build images and start containers in one command
+   docker compose up -d --build
+   ```
+
+   Note: This project uses a custom Airflow Docker base image to accommodate the specific requirements for DBT integration. The custom image includes additional dependencies and configurations needed for DBT to interact with BigQuery and execute the data transformation workflows properly.
 
 3. Access the Airflow web interface:
    - Open your browser and go to: http://localhost:8080
@@ -107,6 +123,7 @@ To run Apache Airflow for workflow orchestration:
      - Transforms and models data in BigQuery using DBT
      - Runs data validation tests
      - Generates documentation
+     - Is automatically triggered by the main Ethereum DAG upon successful completion
      - Executes after the ETL processes are complete
 
    ![Airflow DAG](docs/images/airlow_dags.png)
@@ -117,7 +134,7 @@ To run Apache Airflow for workflow orchestration:
 
 5. To stop Airflow:
    ```bash
-   docker-compose down
+   docker compose down
    ```
 
 ### Required Dependencies
