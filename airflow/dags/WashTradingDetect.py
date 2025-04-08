@@ -4,15 +4,12 @@ from dataclasses import dataclass
 from logging.handlers import RotatingFileHandler
 from typing import List, Optional, Tuple
 
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from google.cloud import bigquery
 from sklearn.cluster import DBSCAN
 from sklearn.preprocessing import StandardScaler
 
-# Move this to .env
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "/opt/airflow/config/application_credentials.json"
 
 
@@ -40,12 +37,12 @@ class WashTradingDetect:
 
         all_dataframes = []
         for table_id in self.table_id_list:
-            # Use parameterized query to prevent SQL injection
-            query = "SELECT * FROM @table_id"
-            job_config = bigquery.QueryJobConfig(
-                query_parameters=[bigquery.ScalarQueryParameter("table_id", "STRING", table_id)]
-            )
-            sql_request_to_dataframe = client.query(query, job_config=job_config).to_dataframe()
+            # Use f-string to insert table name directly into the query
+            # Ensure table_id is properly validated if it comes from external sources
+            # In this case, it's controlled internally, so direct formatting is safe.
+            query = f"SELECT * FROM `{table_id}`"
+            # Remove job_config as parameterization is no longer needed for the table name
+            sql_request_to_dataframe = client.query(query).to_dataframe()
             all_dataframes.append(sql_request_to_dataframe)
 
         self.logger.info("SQL connection and script are OK.")
@@ -85,26 +82,18 @@ class WashTradingDetect:
         clusters = dbscan.fit_predict(features_scaled)
 
         raw_data_inputs["cluster"] = clusters
+        
+        # Generate flat files for plotting in Front-End
+        raw_data_inputs.to_csv('full_data.csv')
+        # x (float)
+        np.savetxt('x_value_column.csv', features_scaled[:, 0], delimiter=",", fmt="%f")
+        # y (integer)
+        raw_data_inputs["time_delta"].to_csv('y_time_delta_column.csv')
+        # Cluster label (integer)
+        np.savetxt('cluster_number.csv', clusters, delimiter=",", fmt="%d")        
+        
         return raw_data_inputs, features_scaled, clusters
-
-    def generate_plot(
-        self: "WashTradingDetect", features_scaled: np.ndarray, raw_data_inputs: pd.DataFrame, clusters: np.ndarray
-    ) -> None:
-        """Generate visualization of clustering results."""
-        plt.figure(figsize=(10, 6))
-        scatter = plt.scatter(features_scaled[:, 0], raw_data_inputs["time_delta"], c=clusters, cmap="viridis", s=10)
-        plt.xlabel("Scaled Value")
-        plt.ylabel("Time Delta")
-        plt.title("DBSCAN Clustering attempt for Wash Trading Detection")
-
-        unique_clusters = np.unique(clusters)
-        handles = [
-            mpatches.Patch(color=scatter.cmap(scatter.norm(cluster)), label=f"Cluster {cluster}")
-            for cluster in unique_clusters
-        ]
-        plt.legend(handles=handles, title="Cluster Labels", loc="best")
-        plt.show()
-
+    
 
 def runner() -> None:
     """Main function to run the wash trading detection analysis."""
@@ -129,9 +118,9 @@ def runner() -> None:
     # Split long table IDs for better readability
     base_path = "etherium-on-chain-intelligence.ethereum_data_onchain_intelligence"
     table_id_list = [
-        f"{base_path}.uni_transactions",
-        f"{base_path}.uniswap_universal_router_transactions",
-        f"{base_path}.uniswap_v2_router_transactions",
+        f"{base_path}.uni_transactions_cleaned",
+        f"{base_path}.uniswap_universal_router_transactions_cleaned",
+        f"{base_path}.uniswap_v2_router_transactions_cleaned",
     ]
 
     logger.info("Starting data extraction...")
@@ -152,9 +141,6 @@ def runner() -> None:
     raw_data_inputs, features_scaled, clusters = wash_class_object.detect_wash_transaction(features, raw_data_inputs)
 
     logger.info("Ending Data computations.")
-    wash_class_object.generate_plot(features_scaled, raw_data_inputs, clusters)
-    logger.info("Clustering plot generated.")
-
 
 if __name__ == "__main__":
     runner()
