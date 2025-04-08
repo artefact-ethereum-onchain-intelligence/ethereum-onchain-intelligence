@@ -103,8 +103,17 @@ To run Apache Airflow for workflow orchestration:
      - Creating BigQuery dataset and tables
      - Loading data from GCS to BigQuery for analysis
 
+   - The DBT workflow DAG (`dbt_ethereum_workflow`):
+     - Transforms and models data in BigQuery using DBT
+     - Runs data validation tests
+     - Generates documentation
+     - Executes after the ETL processes are complete
+
    ![Airflow DAG](docs/images/airlow_dags.png)
    *Ethereum data processing workflow in Airflow*
+
+   ![Airflow DBT DAG](docs/images/airflow_dbt_dag.png)
+   *DBT workflow DAG*
 
 5. To stop Airflow:
    ```bash
@@ -120,6 +129,55 @@ Airflow is configured with the following dependencies:
 - python-dotenv
 
 Note: Logs are stored in the `airflow/logs` directory and data in `airflow/data`. Both directories are gitignored.
+
+## DBT Data Transformation
+
+The project includes a DBT (Data Build Tool) implementation for transforming and modeling Ethereum data in BigQuery.
+
+### DBT Project Structure
+
+The DBT project is located in the `airflow/dbt_project` directory and follows this structure:
+- `models/` - Contains data transformation SQL files and YAML configurations
+  - `staging/` - Initial data cleaning and validation models
+  - `sources.yml` - Defines connections to source tables in BigQuery
+- `macros/` - Reusable SQL macros and functions
+- `dbt_project.yml` - Main DBT project configuration
+- `profiles.yml` - Connection settings for BigQuery
+
+### DBT Models
+
+The project includes the following data models:
+
+1. **Staging Models**:
+   - `uni_transactions_cleaned` - Cleaned transaction data from UNI token or contracts
+   - `uniswap_universal_router_transactions_cleaned` - Cleaned transactions interacting with Uniswap Universal Router
+   - `uniswap_v2_router_transactions_cleaned` - Cleaned transactions interacting with Uniswap V2 Router
+
+Each model validates data quality through dbt tests defined in schema.yml files, ensuring data consistency and completeness.
+
+### Running DBT with Airflow
+
+The project includes a dedicated Airflow DAG for orchestrating DBT workflows:
+
+1. **DBT Ethereum Workflow DAG (`dbt_ethereum_workflow`)**:
+   - Validates environment variables and configuration
+   - Executes staging models
+   - Runs data quality tests
+   - Generates documentation
+
+This DAG is designed to run automatically after the ETL processes complete, ensuring transformed data is immediately available for analysis.
+
+
+
+### Environment Variables for DBT
+
+DBT requires the following environment variables:
+```
+GCP_PROJECT_ID="your_gcp_project_id"  # Your Google Cloud project ID
+BQ_DATASET_ID="your_bigquery_dataset_id"  # BigQuery dataset ID
+```
+
+These should be included in your `.env` file along with the other environment variables.
 
 ## Code Quality & Development
 

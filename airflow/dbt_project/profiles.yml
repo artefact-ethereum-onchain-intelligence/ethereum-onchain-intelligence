@@ -1,0 +1,13 @@
+ethereum_onchain_intelligence:
+  target: dev
+  outputs:
+    dev:
+      type: bigquery
+      method: service-account
+      keyfile: /opt/airflow/config/application_credentials.json
+      # keyfile: ../config/application_credentials.json
+      location: europe-west1
+      project: "{{ env_var('GCP_PROJECT_ID') }}"
+      dataset: "{{ env_var('BQ_DATASET_ID') }}"
+      threads: 2
+      timeout_seconds: 300

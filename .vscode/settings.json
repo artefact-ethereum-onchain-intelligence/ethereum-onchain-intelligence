@@ -1,0 +1,6 @@
+{
+    "dbt.enableNewLineagePanel": true,
+    "dbt.BQ_DATASET_ID": "ethereum_onchain_intelligence",
+    "BQ_DATASET_ID": "ethereum_onchain_intelligence",
+    "dbt.GCP_PROJECT_ID": "ethereum-onchain-intelligence"
+}

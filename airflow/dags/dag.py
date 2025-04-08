@@ -1,22 +1,17 @@
 import logging
 import os  # Add os import for environment variables
 from datetime import datetime, timedelta
-from typing import Any, Dict
 
 from constants import UNI, UNISWAP_UNIVERSAL_ROUTER, UNISWAP_V2_ROUTER
 from extraction_app import extract_data
 from loading_app import create_loading_tasks, set_task_dependencies
 
 from airflow.decorators import dag, task, task_group
+from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 
 # Configure logger
 logger = logging.getLogger(__name__)
-from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
-from airflow.providers.google.cloud.operators.cloud_storage import GCSUploadFileOperator
-from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
-from airflow.operators.bash import BashOperator
-import os
-import subprocess
+
 
 BUCKET_NAME = os.getenv("GCS_BUCKET_NAME", "default-bucket-name")
 DESTINATION_TABLE = os.getenv("BQ_DESTINATION_TABLE", "default_dataset.default_table")
@@ -49,7 +44,7 @@ def ethereum_onchain_intelligence_dag() -> None:
         return result
 
     @task_group(group_id="data_loading")
-    def data_loading(uni_path: str, universal_router_path: str, v2_router_path: str) -> Dict[str, Any | None]:
+    def data_loading(uni_path: str, universal_router_path: str, v2_router_path: str) -> None:
         """Task group for loading processed data into BigQuery"""
 
         logger.info(f"UNI file path: {uni_path}")
@@ -86,46 +81,30 @@ def ethereum_onchain_intelligence_dag() -> None:
         # Set up dependencies between tasks
         set_task_dependencies(loading_tasks)
 
-        # The return statement creates XComs that can be pulled by downstream tasks
-        return {
-            "uni_table": loading_tasks["tables"].get("uni_table"),
-            "universal_router_table": loading_tasks["tables"].get("universal_router_table"),
-            "v2_router_table": loading_tasks["tables"].get("v2_router_table"),
-        }
-
-
-
-    @task
-    def run_dbt_tests():
-        command = f"cd {DBT_PROJECT_DIR} && dbt run --target dev && dbt test --target dev"
-        result = subprocess.run(command, shell=True, check=True, capture_output=True)
-        if result.returncode != 0:
-            raise Exception(f"dbt test failed: {result.stderr.decode('utf-8')}")
-        print(f"dbt test result: {result.stdout.decode('utf-8')}")
-
-    @task(task_id="run_dbt")
-    def run_dbt_command():
-
-        command = "dbt run --project-dir /opt/airflow/dbt_project"  # Point to mounted dbt project
-        result = subprocess.run(command, shell=True, capture_output=True, text=True)
-        if result.returncode != 0:
-            raise Exception(f"DBT run failed: {result.stderr}")
-        print(result.stdout)
-
-
-    dbt = run_dbt_command()
-
-
     # Get the result from the extraction task
     extraction_results = task_extraction()
 
-
-
-    data_loading(
+    # Run the loading tasks
+    loading_results = data_loading(
         uni_path=extraction_results[UNI],
         universal_router_path=extraction_results[UNISWAP_UNIVERSAL_ROUTER],
         v2_router_path=extraction_results[UNISWAP_V2_ROUTER],
     )
+
+    # Trigger the downstream DBT DAG
+    trigger_dbt_dag = TriggerDagRunOperator(
+        task_id="trigger_dbt_ethereum_workflow",
+        trigger_dag_id="dbt_ethereum_workflow",  # The ID of the DAG to trigger
+        conf={  # Optional: pass configuration to the triggered DAG
+            "logical_date": "{{ dag_run.logical_date | ds }}",
+            "triggered_by_dag_id": "{{ dag.dag_id }}",
+        },
+        wait_for_completion=False,  # Don't wait for the DBT DAG to finish
+        deferrable=False,  # Set True for better resource usage if using deferrable operators
+    )
+
+    # Set up dependencies (corrected)
+    extraction_results >> loading_results >> trigger_dbt_dag
 
 
 ethereum_onchain_intelligence_dag()

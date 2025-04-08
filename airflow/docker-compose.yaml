@@ -43,10 +43,12 @@ x-airflow-common:
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     EXTRACTION_DIR: /opt/airflow/data/
+    DBT_PROJECT_DIR: /opt/airflow/dbt_project
     AIRFLOW_CONN_GOOGLE_CLOUD_DEFAULT: '{"conn_type": "google_cloud_platform", "extra": {"key_path": "/opt/airflow/config/application_credentials.json", "scope": "https://www.googleapis.com/auth/cloud-platform", "num_retries": 5}}'
     ETHERSCAN_API_KEY: ${ETHERSCAN_API_KEY:-}
     BQ_DATASET_ID: ${BQ_DATASET_ID:-}
     GCS_BUCKET_NAME: ${GCS_BUCKET_NAME:-}
+    GCP_PROJECT_ID: ${GCP_PROJECT_ID:-}
 
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
@@ -55,7 +57,7 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - ${AIRFLOW_PROJ_DIR:-.}/data:/opt/airflow/data
     - ./requirements.txt:/opt/airflow/requirements.txt
-    - ./dbt_project:/opt/airflow/dbt_project
+    - ./dbt_project:${DBT_PROJECT_DIR}
 
 
   user: "${AIRFLOW_UID:-50000}:0"
@@ -209,8 +211,8 @@ services:
           echo "   https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#before-you-begin"
           echo
         fi
-        mkdir -p /sources/logs /sources/dags /sources/plugins /sources/data
-        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins,data}
+        mkdir -p /sources/logs /sources/dags /sources/plugins /sources/data /sources/dbt_project/logs /sources/dbt_project/target
+        chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins,data,dbt_project/logs,dbt_project/target}
         exec /entrypoint airflow version
     environment:
       <<: *airflow-common-env
