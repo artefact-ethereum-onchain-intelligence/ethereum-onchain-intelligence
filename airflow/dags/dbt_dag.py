@@ -67,6 +67,15 @@ def dbt_ethereum_workflow_dag() -> None:
     # Validate environment before any DBT commands
     validate_env_task = validate_environment()
 
+    # Install dbt dependencies
+    dbt_deps = BashOperator(
+        task_id="install_dependencies",
+        bash_command=(
+            f"dbt deps --project-dir {DBT_PROJECT_DIR} --profiles-dir {DBT_PROJECT_DIR} " f"--log-path {DBT_LOG_PATH}"
+        ),
+        cwd=DBT_PROJECT_DIR,
+    )
+
     # Task group for staging models
     with TaskGroup(group_id="staging_models") as staging_models:
         # Run staging models using BashOperator
@@ -103,7 +112,7 @@ def dbt_ethereum_workflow_dag() -> None:
     )
 
     # Define task dependencies
-    validate_env_task >> staging_models >> dbt_docs_generate
+    validate_env_task >> dbt_deps >> staging_models >> dbt_docs_generate
 
 
 # Instantiate the DAG
