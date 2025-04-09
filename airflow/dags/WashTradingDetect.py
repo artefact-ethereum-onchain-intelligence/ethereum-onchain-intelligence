@@ -40,7 +40,7 @@ class WashTradingDetect:
             # Use f-string to insert table name directly into the query
             # Ensure table_id is properly validated if it comes from external sources
             # In this case, it's controlled internally, so direct formatting is safe.
-            query = f"SELECT * FROM `{table_id}`"  # noqa: S608
+            query = f"SELECT * FROM `{table_id}`"
             # Remove job_config as parameterization is no longer needed for the table name
             sql_request_to_dataframe = client.query(query).to_dataframe()
             all_dataframes.append(sql_request_to_dataframe)
@@ -82,18 +82,27 @@ class WashTradingDetect:
         clusters = dbscan.fit_predict(features_scaled)
 
         raw_data_inputs["cluster"] = clusters
+        
+        # Generate flat files (for plotting in Front-End)
+        # Prepare individual columns
+        x_values = features_scaled[:, 0]                        # float
+        y_time_delta = raw_data_inputs["time_delta"].values     # integer 
+        cluster_labels = clusters                               # integer
 
-        # Generate flat files for plotting in Front-End
-        raw_data_inputs.to_csv("full_data.csv")
-        # x (float)
-        np.savetxt("x_value_column.csv", features_scaled[:, 0], delimiter=",", fmt="%f")
-        # y (integer)
-        raw_data_inputs["time_delta"].to_csv("y_time_delta_column.csv")
-        # Cluster label (integer)
-        np.savetxt("cluster_number.csv", clusters, delimiter=",", fmt="%d")
+        # Stack them together as columns
+        combined_data = np.column_stack((x_values, y_time_delta, cluster_labels))
 
+        # Create a DataFrame for better CSV output with headers
+        df_combined = pd.DataFrame(combined_data, columns=["x_value", "time_delta", "cluster_label"])
+
+        output_dir = '../data'
+        os.makedirs(output_dir, exist_ok=True)
+
+        output_path = os.path.join(output_dir, 'wash_trading_plot_data.csv')
+        df_combined.to_csv(output_path)      
+        
         return raw_data_inputs, features_scaled, clusters
-
+    
 
 def runner() -> None:
     """Main function to run the wash trading detection analysis."""
@@ -141,7 +150,6 @@ def runner() -> None:
     raw_data_inputs, features_scaled, clusters = wash_class_object.detect_wash_transaction(features, raw_data_inputs)
 
     logger.info("Ending Data computations.")
-
 
 if __name__ == "__main__":
     runner()
