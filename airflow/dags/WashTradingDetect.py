@@ -97,6 +97,16 @@ class WashTradingDetect:
         plt.ylabel("Time Delta")
         plt.title("DBSCAN Clustering attempt for Wash Trading Detection")
 
+        # Create DataFrame for plot data
+        plot_data = pd.DataFrame(
+            {"Scaled_Value": features_scaled[:, 0], "Time_Delta": raw_data_inputs["time_delta"], "Cluster": clusters}
+        )
+
+        # Save DataFrame to CSV in the "data" folder
+        csv_file_path = "../data/wash_trading_plot_data.csv"  # Relative path to "data" folder
+        plot_data.to_csv(csv_file_path, index=False)
+        self.logger.info(f"Plot data saved to {csv_file_path}")
+
         unique_clusters = np.unique(clusters)
         handles = [
             mpatches.Patch(color=scatter.cmap(scatter.norm(cluster)), label=f"Cluster {cluster}")

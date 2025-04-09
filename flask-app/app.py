@@ -17,9 +17,9 @@ def plot_colored_dots(csv_filepath: str) -> str:
 
         plt.figure(figsize=(8, 6))
         plt.scatter(x, y, c=colors, cmap="viridis")
-        plt.xlabel("X Coordinate")
-        plt.ylabel("Y Coordinate")
-        plt.title("Wash trading cluster detection")
+        plt.xlabel("Scaled Value")
+        plt.ylabel("Time Delta")
+        plt.title("DBSCAN Clustering attempt for Wash Trading Detection")
         plt.colorbar(label="cluster")
 
         img_buf = io.BytesIO()
@@ -40,7 +40,7 @@ def plot_colored_dots(csv_filepath: str) -> str:
 
 @app.route("/")
 def plot_endpoint() -> Response:
-    csv_filepath = "../airflow/data/data.csv"
+    csv_filepath = "../airflow/data/wash_trading_plot_data.csv"
     img_base64 = plot_colored_dots(csv_filepath)
 
     if isinstance(img_base64, str) and img_base64.startswith("Error"):
