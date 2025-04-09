@@ -82,12 +82,12 @@ class WashTradingDetect:
         clusters = dbscan.fit_predict(features_scaled)
 
         raw_data_inputs["cluster"] = clusters
-        
+
         # Generate flat files (for plotting in Front-End)
         # Prepare individual columns
-        x_values = features_scaled[:, 0]                        # float
-        y_time_delta = raw_data_inputs["time_delta"].values     # integer 
-        cluster_labels = clusters                               # integer
+        x_values = features_scaled[:, 0]  # float
+        y_time_delta = raw_data_inputs["time_delta"].values  # integer
+        cluster_labels = clusters  # integer
 
         # Stack them together as columns
         combined_data = np.column_stack((x_values, y_time_delta, cluster_labels))
@@ -95,14 +95,16 @@ class WashTradingDetect:
         # Create a DataFrame for better CSV output with headers
         df_combined = pd.DataFrame(combined_data, columns=["x_value", "time_delta", "cluster_label"])
 
-        output_dir = '../data'
+        # Get output directory from Airflow config
+        output_dir = os.environ.get("AIRFLOW_HOME", "/opt/airflow")
+        output_dir = os.path.join(output_dir, "data")
         os.makedirs(output_dir, exist_ok=True)
 
-        output_path = os.path.join(output_dir, 'wash_trading_plot_data.csv')
-        df_combined.to_csv(output_path)      
-        
+        output_path = os.path.join(output_dir, "wash_trading_plot_data.csv")
+        df_combined.to_csv(output_path)
+
         return raw_data_inputs, features_scaled, clusters
-    
+
 
 def runner() -> None:
     """Main function to run the wash trading detection analysis."""
@@ -124,8 +126,12 @@ def runner() -> None:
     min_samples = 300
     features_sublist = ["blockNumber", "timeStamp", "nonce", "transactionIndex", "from", "to", "value"]
 
+    # Get project and dataset IDs from environment variables
+    project_id = os.getenv("GCP_PROJECT_ID")
+    dataset_id = os.getenv("BQ_DATASET_ID")
+    base_path = f"{project_id}.{dataset_id}"
+
     # Split long table IDs for better readability
-    base_path = "etherium-on-chain-intelligence.ethereum_data_onchain_intelligence"
     table_id_list = [
         f"{base_path}.uni_transactions_cleaned",
         f"{base_path}.uniswap_universal_router_transactions_cleaned",
@@ -150,6 +156,7 @@ def runner() -> None:
     raw_data_inputs, features_scaled, clusters = wash_class_object.detect_wash_transaction(features, raw_data_inputs)
 
     logger.info("Ending Data computations.")
+
 
 if __name__ == "__main__":
     runner()

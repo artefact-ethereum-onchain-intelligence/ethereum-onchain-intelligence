@@ -2,6 +2,8 @@ import logging
 import os
 from datetime import datetime, timedelta
 
+from WashTradingDetect import runner
+
 from airflow.decorators import dag, task
 from airflow.operators.bash import BashOperator
 from airflow.utils.task_group import TaskGroup
@@ -46,6 +48,14 @@ def validate_environment() -> bool:
     logger.info(f"DBT log directory: {DBT_LOG_PATH}")
 
     return True
+
+
+@task
+def run_wash_trading_detection() -> None:
+    """Run custom wash trading detection logic"""
+    logger.info("Starting wash trading detection using runner...")
+    runner()
+    logger.info("Wash trading detection completed.")
 
 
 # Define the DAG
@@ -101,6 +111,9 @@ def dbt_ethereum_workflow_dag() -> None:
         # Set task dependencies within the group
         dbt_run_staging >> dbt_test_staging
 
+    # Insert runner task
+    run_runner_task = run_wash_trading_detection()
+
     # Generate documentation
     dbt_docs_generate = BashOperator(
         task_id="generate_documentation",
@@ -112,7 +125,7 @@ def dbt_ethereum_workflow_dag() -> None:
     )
 
     # Define task dependencies
-    validate_env_task >> dbt_deps >> staging_models >> dbt_docs_generate
+    validate_env_task >> dbt_deps >> staging_models >> run_runner_task >> dbt_docs_generate
 
 
 # Instantiate the DAG
