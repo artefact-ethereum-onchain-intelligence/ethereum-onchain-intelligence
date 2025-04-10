@@ -40,7 +40,7 @@ class WashTradingDetect:
             # Use f-string to insert table name directly into the query
             # Ensure table_id is properly validated if it comes from external sources
             # In this case, it's controlled internally, so direct formatting is safe.
-            query = f"SELECT * FROM `{table_id}`"
+            query = f"SELECT * FROM `{table_id}`"  # noqa: S608
             # Remove job_config as parameterization is no longer needed for the table name
             sql_request_to_dataframe = client.query(query).to_dataframe()
             all_dataframes.append(sql_request_to_dataframe)
@@ -83,27 +83,34 @@ class WashTradingDetect:
 
         raw_data_inputs["cluster"] = clusters
 
-        # Generate flat files (for plotting in Front-End)
-        # Prepare individual columns
-        x_values = features_scaled[:, 0]  # float
-        y_time_delta = raw_data_inputs["time_delta"].values  # integer
-        cluster_labels = clusters  # integer
-
-        # Stack them together as columns
-        combined_data = np.column_stack((x_values, y_time_delta, cluster_labels))
-
-        # Create a DataFrame for better CSV output with headers
-        df_combined = pd.DataFrame(combined_data, columns=["x_value", "time_delta", "cluster_label"])
-
-        # Get output directory from Airflow config
-        output_dir = os.environ.get("AIRFLOW_HOME", "/opt/airflow")
-        output_dir = os.path.join(output_dir, "data")
-        os.makedirs(output_dir, exist_ok=True)
-
-        output_path = os.path.join(output_dir, "wash_trading_plot_data.csv")
-        df_combined.to_csv(output_path)
+        # Generate flat files for plotting in Front-End
+        raw_data_inputs.to_csv("full_data.csv")
+        # x (float)
+        np.savetxt("x_value_column.csv", features_scaled[:, 0], delimiter=",", fmt="%f")
+        # y (integer)
+        raw_data_inputs["time_delta"].to_csv("y_time_delta_column.csv")
+        # Cluster label (integer)
+        np.savetxt("cluster_number.csv", clusters, delimiter=",", fmt="%d")
 
         return raw_data_inputs, features_scaled, clusters
+
+    # def generate_plot(
+    #     self: "WashTradingDetect", features_scaled: np.ndarray, raw_data_inputs: pd.DataFrame, clusters: np.ndarray
+    # ) -> None:
+    #     """Generate visualization of clustering results."""
+    #     plt.figure(figsize=(10, 6))
+    #     scatter = plt.scatter(features_scaled[:, 0], raw_data_inputs["time_delta"], c=clusters, cmap="viridis", s=10)
+    #     plt.xlabel("Scaled Value")
+    #     plt.ylabel("Time Delta")
+    #     plt.title("DBSCAN Clustering attempt for Wash Trading Detection")
+
+    #     unique_clusters = np.unique(clusters)
+    #     handles = [
+    #         mpatches.Patch(color=scatter.cmap(scatter.norm(cluster)), label=f"Cluster {cluster}")
+    #         for cluster in unique_clusters
+    #     ]
+    #     plt.legend(handles=handles, title="Cluster Labels", loc="best")
+    #     plt.show()
 
 
 def runner() -> None:
@@ -126,12 +133,8 @@ def runner() -> None:
     min_samples = 300
     features_sublist = ["blockNumber", "timeStamp", "nonce", "transactionIndex", "from", "to", "value"]
 
-    # Get project and dataset IDs from environment variables
-    project_id = os.getenv("GCP_PROJECT_ID")
-    dataset_id = os.getenv("BQ_DATASET_ID")
-    base_path = f"{project_id}.{dataset_id}"
-
     # Split long table IDs for better readability
+    base_path = "etherium-on-chain-intelligence.ethereum_data_onchain_intelligence"
     table_id_list = [
         f"{base_path}.uni_transactions_cleaned",
         f"{base_path}.uniswap_universal_router_transactions_cleaned",

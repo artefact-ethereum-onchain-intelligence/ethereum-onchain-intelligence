@@ -17,8 +17,8 @@ def plot_colored_dots(csv_filepath: str) -> str:
 
         plt.figure(figsize=(8, 6))
         plt.scatter(x, y, c=colors, cmap="viridis")
-        plt.xlabel("X Coordinate")
-        plt.ylabel("Y Coordinate")
+        plt.xlabel("value")
+        plt.ylabel("time delta")
         plt.title("Wash trading cluster detection")
         plt.colorbar(label="cluster")
 
