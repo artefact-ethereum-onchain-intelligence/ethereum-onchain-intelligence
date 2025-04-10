@@ -40,7 +40,7 @@ def plot_colored_dots(csv_filepath: str) -> str:
 
 @app.route("/")
 def plot_endpoint() -> Response:
-    csv_filepath = "../airflow/data/data.csv"
+    csv_filepath = "../airflow/data/wash_trading_plot_data.csv"
     img_base64 = plot_colored_dots(csv_filepath)
 
     if isinstance(img_base64, str) and img_base64.startswith("Error"):
